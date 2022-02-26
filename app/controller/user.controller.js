@@ -39,22 +39,23 @@ class Users {
   static async login(req, res) {
     try {
       const { email, password } = req.body;
+      console.log(email,password)
       const isUser = await User.findOne({
         email,
       });
       if (!email) {
-        throw {
+        throw({
           message: "User not found",
-        };
+        });
       }
-      const isPasswordCorrect = await bcrypt.compareSync(
+      const isPasswordCorrect = bcrypt.compareSync(
         password,
         isUser.password
       );
       if (!isPasswordCorrect) {
-        throw {
+        throw ({
           message: "Incorrect password",
-        };
+        });
       }
       delete isUser.password;
       delete isUser.createdAt;
@@ -74,11 +75,12 @@ class Users {
         status: "success",
         user: {
           _id: isUser._id,
-          email: isUser.email
-        },
-        data: token,
+          email: isUser.email,
+          token
+        }
       });
     } catch (error) {
+      console.log(error)
       return res.json({
         status: "failed",
         error: error.message,
