@@ -2,6 +2,7 @@ const { Customer } = require("../models/customer.mode");
 const { Products } = require("../models/products.model");
 const { Sales } = require("../models/sales.model");
 const momentRandom = require("moment-random");
+const m = require("moment");
 
 class Sale {
   static async insert(req, res) {
@@ -46,14 +47,17 @@ class Sale {
 
   static async update(req, res) {
     try {
-      const allSales = await Sales.find({}).count();
+      const allSales = await Sales.find({});
       for (let i = 0; i < allSales.length; i++) {
         const createdAtDate = momentRandom("2022-02-20", "2021-02-27");
-        await Sales.updateOne({ _id: all });
+        await Sales.updateOne({ _id: allSales[i]._id }, {
+            $set: {
+                createdAt: new Date(createdAtDate)
+            }
+        });
       }
       return res.json({
         status: "success",
-        dates,
       });
     } catch (error) {
       console.log(error);
@@ -116,8 +120,10 @@ class Sale {
       }
       const data = [];
       const sortcount = tempData.map((x) => x.count);
-      sortcount.sort(function(a, b){return b - a});
-      console.log(sortcount.slice(0, 5))
+      sortcount.sort(function (a, b) {
+        return b - a;
+      });
+      console.log(sortcount.slice(0, 5));
       for (let i = 0; i < sortcount.length; i++) {
         const findcount = tempData.find((x) => x.count === sortcount[i]);
         data.push(findcount);
@@ -126,8 +132,8 @@ class Sale {
         status: "success",
         data,
         labels: sortcount.slice(0, 5),
-        name: data.slice(0, 5).map(x => x.productName),
-        category: data.slice(0, 5).map(x => x.category)
+        name: data.slice(0, 5).map((x) => x.productName),
+        category: data.slice(0, 5).map((x) => x.category),
       });
     } catch (error) {
       console.log(error);
@@ -139,37 +145,62 @@ class Sale {
   }
 
   static async getModeReport(req, res) {
-      try {
-          const online = await Customer.find({ mode: 'Online' });
-          const offline = await Customer.find({ mode: 'Offline' });
-          const onlineIds = online.map(x => x._id);
-          const offlineIds = offline.map(x => x._id);
+    try {
+      const online = await Customer.find({ mode: "Online" });
+      const offline = await Customer.find({ mode: "Offline" });
+      const onlineIds = online.map((x) => x._id);
+      const offlineIds = offline.map((x) => x._id);
 
-          const onlineReport = await Sales.find({
-              customerId: {
-                  $in: onlineIds
-              }
-          }).count();
+      const onlineReport = await Sales.find({
+        customerId: {
+          $in: onlineIds,
+        },
+      }).count();
 
-          const offlineReport = await Sales.find({
-              customerId: {
-                  $in: offlineIds
-              }
-          }).count();
-          return res.json({
-              status: 'success',
-              data: {
-                  onlineReport,
-                  offlineReport
-              }
-          })
-      } catch (error) {
-        console.log(error);
-        return res.json({
-          staus: "failed",
-          msg: error.message,
-        });
+      const offlineReport = await Sales.find({
+        customerId: {
+          $in: offlineIds,
+        },
+      }).count();
+      return res.json({
+        status: "success",
+        data: {
+          onlineReport,
+          offlineReport,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return res.json({
+        staus: "failed",
+        msg: error.message,
+      });
+    }
+  }
+
+  static async getTimeWiseReport(req, res) {
+    try {
+      const { type } = req.params;
+      let data = [];
+      if (type === "all") {
+        const distinctdata = await Sales.find({}).distinct("createdAt");
+        const duplicateformatdate = distinctdata.map((x) =>
+          m(x).format("YYYY-MM-DD")
+        );
+        const removeDuplicates = [...new Set(duplicateformatdate)];
+        data.push(duplicateformatdate);
       }
+      return res.json({
+        status: "success",
+        data,
+      });
+    } catch (error) {
+      console.log(error);
+      return res.json({
+        staus: "failed",
+        msg: error.message,
+      });
+    }
   }
 }
 
