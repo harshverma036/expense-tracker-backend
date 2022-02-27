@@ -67,6 +67,36 @@ class Report {
       });
     }
   }
+
+  static async getAllGenderReport(req, res) {
+    try {
+      const male = await Customer.find({
+        gender: 'Male'
+      }).count();
+      const female = await Customer.find({
+        gender: 'Female'
+      }).count();
+      const others = await Customer.find({
+        gender: {
+          $nin: ['Male', 'Female']
+        }
+      }).count();
+      return res.json({
+        status: 'success',
+        data: {
+          male,
+          female,
+          others
+        }
+      })
+    } catch (error) {
+      console.log(error)
+      return res.json({
+        status: "failed",
+        message: error.message,
+      });
+    }
+  }
 }
 
 module.exports = {

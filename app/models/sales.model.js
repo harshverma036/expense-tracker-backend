@@ -9,6 +9,9 @@ const salesSchema = new mongoose.Schema({
         type: mongoose.Types.ObjectId,
         ref: 'Products'
     },
+    product_code: {
+        type: String
+    },
     qty: {
         type: Number
     },
@@ -23,6 +26,9 @@ const salesSchema = new mongoose.Schema({
     },
     discountAmount: {
         type: Number
+    },
+    category: {
+        type: String
     }
 }, {
     timestamps: true
