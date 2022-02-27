@@ -50,11 +50,14 @@ class Sale {
       const allSales = await Sales.find({});
       for (let i = 0; i < allSales.length; i++) {
         const createdAtDate = momentRandom("2022-02-20", "2021-02-27");
-        await Sales.updateOne({ _id: allSales[i]._id }, {
+        await Sales.updateOne(
+          { _id: allSales[i]._id },
+          {
             $set: {
-                createdAt: new Date(createdAtDate)
-            }
-        });
+              createdAt: new Date(createdAtDate),
+            },
+          }
+        );
       }
       return res.json({
         status: "success",
@@ -193,6 +196,30 @@ class Sale {
       return res.json({
         status: "success",
         data,
+      });
+    } catch (error) {
+      console.log(error);
+      return res.json({
+        staus: "failed",
+        msg: error.message,
+      });
+    }
+  }
+
+  static async countall(req, res) {
+    try {
+      const allSales = await Sales.find({}).count();
+      const allCusomers = await Customer.find({}).count();
+      const products = await Products.find({}).count();
+      const category = 7;
+      return res.json({
+        status: "success",
+        data: {
+          allSales,
+          allCusomers,
+          products,
+          category,
+        },
       });
     } catch (error) {
       console.log(error);
