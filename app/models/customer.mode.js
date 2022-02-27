@@ -12,6 +12,9 @@ const customerSchema = new mongoose.Schema({
     },
     age: {
         type: Number
+    },
+    mode: {
+        type: String
     }
 }, {
     timestamps: true
