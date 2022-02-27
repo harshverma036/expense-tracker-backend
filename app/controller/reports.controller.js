@@ -1,5 +1,6 @@
 const { Customer } = require("../models/customer.mode");
 const { Reports } = require("../models/reports.models");
+const { Sales } = require("../models/sales.model");
 
 class Report {
   calculateAgePercent(data) {
@@ -16,7 +17,7 @@ class Report {
     try {
       const allData = await Customer.find({});
       const allAges = allData.map((x) => x.age);
-      const removeDuplicateAge = [...new Set(allAges)];
+      const removeDuplicateAge = [...new Set(allAges)].sort();
       const dataCount = [];
       console.log(removeDuplicateAge, removeDuplicateAge.length);
       for (let i = 0; i < removeDuplicateAge.length; i++) {
@@ -27,6 +28,16 @@ class Report {
           count: d,
         });
       }
+      const dataRanges = removeDuplicateAge.length;
+      const ranges = [];
+      for(let i = 0; i < removeDuplicateAge.length; i++) {
+        const r1 = removeDuplicateAge[i];
+        // for (let j = i + 4; j < removeDuplicateAge.length; j++) {
+          const r2 = removeDuplicateAge[i + 5];
+          ranges.push(`${r1}-${r2}`)
+        // } 
+      }
+      console.log(dataRanges, 'RANGE')
       const insertReport = await Reports.create({
         data: {
           ageData: {
@@ -36,11 +47,12 @@ class Report {
         },
         reportType: "Age",
       });
-      console.log(insertReport);
+      // console.log(insertReport);
       //   console.log(removeDuplicateAge)
       return res.json({
         status: "success",
         dataCount,
+        ranges
       });
     } catch (error) {
       console.log(error);
@@ -97,6 +109,19 @@ class Report {
       });
     }
   }
+
+  static async getAllCount(req, res) {
+    try {
+      const totalCustomers = await Customer.find({}).count();
+      const totalSales = await Sales.find({}).count();
+    } catch (error) {
+      console.log(error)
+      return res.json({
+        status: "failed",
+        message: error.message,
+      });
+    }
+  } 
 }
 
 module.exports = {
