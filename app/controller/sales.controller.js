@@ -137,6 +137,40 @@ class Sale {
       });
     }
   }
+
+  static async getModeReport(req, res) {
+      try {
+          const online = await Customer.find({ mode: 'Online' });
+          const offline = await Customer.find({ mode: 'Offline' });
+          const onlineIds = online.map(x => x._id);
+          const offlineIds = offline.map(x => x._id);
+
+          const onlineReport = await Sales.find({
+              customerId: {
+                  $in: onlineIds
+              }
+          }).count();
+
+          const offlineReport = await Sales.find({
+              customerId: {
+                  $in: offlineIds
+              }
+          }).count();
+          return res.json({
+              status: 'success',
+              data: {
+                  onlineReport,
+                  offlineReport
+              }
+          })
+      } catch (error) {
+        console.log(error);
+        return res.json({
+          staus: "failed",
+          msg: error.message,
+        });
+      }
+  }
 }
 
 module.exports = {
